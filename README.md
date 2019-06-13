@@ -12,7 +12,7 @@ We use maven to build it, Use the given [pom.xml](https://github.com/anonymeDoc/
 ## Use
 To execute HD4C use the following command :
 ```
-$SPARK_HOME/bin/spark-submit --class "com.mycompany.dcdpm.App" HD4C-jar-with-dependencies.jar <dimensions> <number of workers> <number of distributions> <target to data file> <number of clusters for Kmeans> <number of real clusters> <1 if the real number of clusters is known>
+$SPARK_HOME/bin/spark-submit HD4C-jar-with-dependencies.jar <dimensions> <number of workers> <number of distributions> <target to data file> <number of clusters for Kmeans> <number of real clusters> <1 if the real number of clusters is known>
 ```
 ### Necessary parameters 
 1. **dimensions:** the number of dimensions
