@@ -1,6 +1,8 @@
 # HD4C
 
-This is a Distributed Clustering with Spark based on Dirichlet Process Mixture adapted for high dimensional data.
+This is a Distributed Clustering with Spark based on Dirichlet Process Mixture adapted for high dimensional data, this approach is described in the following paper:
+
+Khadidja Meguelati, Bénédicte Fontez, Nadine Hilgert, Florent Masseglia. [High Dimensional Data Clustering by means of Distributed Dirichlet Process Mixture Models](). IEEE Big Data : IEEE International Conference on Big Data, Dec 2019, Los Angeles, CA, USA.
 
 ## Requirements
 HD4C works with [Apache Spark](http://spark.apache.org). In order to run it you must download and install [Spark Release 2.0.0](https://spark.apache.org/releases/spark-release-2-0-0.html).
