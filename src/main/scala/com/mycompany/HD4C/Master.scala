@@ -1,11 +1,15 @@
 package fr.inria.zenith.hd4c
 
+import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator
+import org.apache.commons.math3.analysis.interpolation.DividedDifferenceInterpolator
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.distribution.BetaDistribution
 import org.apache.commons.math3.distribution.GammaDistribution
-import org.apache.commons.math3.distribution.MultivariateNormalDistribution
 import scala.collection.mutable.ArrayBuffer
 
-class Master(val E : Double, val S : Double, n : Int, var gamma : Double, parameters : ArrayBuffer[(Array[Double], Array[Array[Double]])], dim : Int) {
+class Master(var sigma : Double, var beta : Double, var sigma0 : Double, var beta0 : Double, n : Int, var gamma : Double, parameters : ArrayBuffer[(Array[Double], Array[Array[Double]])], dim : Int, tStar : Array[Double]) {
   
   val H : Int = 1
   
@@ -19,32 +23,58 @@ class Master(val E : Double, val S : Double, n : Int, var gamma : Double, parame
     for(i <- 0 to dim - 1)
       m(i) = 0
   
-    var sigma1 = Array.ofDim[Double](dim, dim)
+  var Sigma = Array.ofDim[Double](dim, dim)
     for(i <- 0 to dim - 1)
-      for(j <- 0 to dim - 1)
-        if(i == j)
-          sigma1(i)(j)= E
+      for(j <- 0 to dim - 1){
+        val s = (Math.pow(sigma, 2) / (2 * beta)) * Math.exp(- beta * Math.abs(tStar(i)-tStar(j))) 
+        if (s < Math.pow(10, -3) )
+          Sigma(i)(j) = 0
         else
-          sigma1(i)(j) = 0
-
-
-
-    var sigma2 = Array.ofDim[Double](dim, dim)
+          Sigma(i)(j) = s
+      }
+      
+  // Variance between centers
+  
+  var Sigma0 = Array.ofDim[Double](dim, dim)
     for(i <- 0 to dim - 1)
-      for(j <- 0 to dim - 1)
-        if(i == j)
-          sigma2(i)(j)= S
+      for(j <- 0 to dim - 1){
+        val s = (Math.pow(sigma0, 2) / (2 * beta0)) * Math.exp(- beta0 * Math.pow(tStar(i)-tStar(j), 2))
+        if (s < Math.pow(10, -3) )
+          Sigma0(i)(j) = 0
         else
-          sigma2(i)(j) = 0
+          Sigma0(i)(j) = s
+      }
  
 
   def createNewCluster(y : GlobalCluster) = {
     
     val id = clusterVector.size
-
-    var superCluster = new GlobalCluster(new ArrayBuffer[(Int, Int)], id, y.size, y.y_, y.phi, y.mean, y.sigma2)
     
-    superCluster.updatePhi(sigma1)
+    /*
+    val m = new Array[Double](dim)
+    for(i <- 0 to dim - 1)
+      m(i) = y.mean(i) 
+    
+    val yi = new Array[Double](dim)
+    for(i <- 0 to dim - 1)
+      yi(i) = y.y_(i)
+    
+    val f = new Array[Double](dim)
+    for(i <- 0 to dim - 1)
+      f(i) = y.phi(i)
+    
+    val s = Array.ofDim[Double](dim, dim)
+    for(i <- 0 to dim - 1)
+      for(j <- 0 to dim - 1)
+        s(i)(j) = y.SigmaC(i)(j)
+    
+    val siz = y.size
+    
+    */
+
+    var superCluster = new GlobalCluster(new ArrayBuffer[(Int, Int)], id, y.size, y.y_, y.phi, y.mean, y.SigmaC)
+    
+    superCluster.updatePhi(m, Sigma0, Sigma, sigma, beta, tStar)
     
     clusterVector += superCluster
     c += y.id -> id
@@ -92,6 +122,9 @@ class Master(val E : Double, val S : Double, n : Int, var gamma : Double, parame
     
     clusterVector = new ArrayBuffer[GlobalCluster]
     
+   /*  println("nb individuals : " + individuals.length)
+    println */
+    
     for(y <- individuals){
       createNewCluster(y)
     }
@@ -123,12 +156,58 @@ class Master(val E : Double, val S : Double, n : Int, var gamma : Double, parame
     
   }
 
-def gibbsSampling()={
+  def gibbsSampling(s : Double, b : Double, s0 : Double, b0 : Double)={
+    
+    //println("Gibbs ...")
 
+    beta = b
+    beta0 = b0
+    sigma = s
+    sigma0 = s0
+    
+    for(i <- 0 to dim - 1)
+      for(j <- 0 to dim - 1){
+        val s = (Math.pow(sigma, 2) / (2 * beta)) * Math.exp(- beta * Math.abs(tStar(i)-tStar(j))) 
+        if (s < Math.pow(10, -3) )
+          Sigma(i)(j) = 0
+        else
+          Sigma(i)(j) = s
+      }
+      
+    // Variance between centers
+
+    for(i <- 0 to dim - 1)
+      for(j <- 0 to dim - 1){
+        val s = (Math.pow(sigma0, 2) / (2 * beta0)) * Math.exp(- beta0 * Math.pow(tStar(i)-tStar(j), 2))
+        if (s < Math.pow(10, -3) )
+          Sigma0(i)(j) = 0
+        else
+          Sigma0(i)(j) = s
+      }
+    
+   /*  println
+    println("Sigma0 : ")
+    for(i <- 0 to dim - 1){
+      for(j <- 0 to dim - 1)
+        print(Sigma0(i)(j) + " ")
+    println
+    }
+    
+    println
+    println("Sigma : ")
+    for(i <- 0 to dim - 1){
+      for(j <- 0 to dim - 1)
+        print(Sigma(i)(j) + " ")
+    println
+    }
+    
+    println */
    
     var indice = 0
 
-  for(iter <- 0 to 39){
+    for(iter <- 0 to 2){
+      
+      //println("Master iteration : " + iter)
     
       // for each data point
       for(y <- individuals){
@@ -195,16 +274,22 @@ def gibbsSampling()={
 
       }
       
+      /* println("nb Clusters : " + clusterVector.length)
+      println */
+      
       // update phis
       
       for(cluster <- clusterVector)    { 
         
-        cluster.updatePhi(sigma1)
+        cluster.updatePhi(m, Sigma0, Sigma, sigma, beta, tStar)
         
       }
       
       
       gamma = gammaInference(gamma, 1, 0.5, clusterVector.size, n)
+      //println("Master Gamma : " + gamma)
+    /*    println("Itération " + iter + " finie, nb clusters : " + clusterVector.length) */
+      
       
   }
     
@@ -243,7 +328,7 @@ def addAuxiliaryParameters(H : Int, y : GlobalCluster) = {
 
     val id = clusterVector.length
     
-    val superCluster = new GlobalCluster(new ArrayBuffer[(Int, Int)], id, gamma, a, y.phi, m, sigma2)
+    val superCluster = new GlobalCluster(new ArrayBuffer[(Int, Int)], id, gamma, a, y.phi, m, Sigma0)
     
     clusterVector += superCluster
     
@@ -256,7 +341,7 @@ def addAuxiliaryParameters(H : Int, y : GlobalCluster) = {
     var proba : Map[Int, Double] = Map()
     for(cluster <- clusterVector){
 
-        proba += (cluster.id -> (Math.log(cluster.size) + Math.log(normalLikelihood(y.y_, cluster.phi, sigma1))- Math.log(n - y.size + gamma)))
+        proba += (cluster.id -> (Math.log(cluster.size) + logLikelihood(y.y_, cluster.phi, sigma, beta)- Math.log(n - y.size + gamma)))
 
     }
   
@@ -277,12 +362,12 @@ def addAuxiliaryParameters(H : Int, y : GlobalCluster) = {
     proba
   }
   
-  def normalLikelihood(data : Array[Double], mean : Array[Double], sigma1 : Array[Array[Double]]) : Double ={
+  /* def normalLikelihood(data : Array[Double], mean : Array[Double], sigma1 : Array[Array[Double]]) : Double ={
     var vraisemblance : Double = 1
     val N = new MultivariateNormalDistribution(mean, sigma1)
     N.density(data)
  
-  }
+  } */
 
   def max(proba : Map[Int, Double])={
    
@@ -341,7 +426,7 @@ def addAuxiliaryParameters(H : Int, y : GlobalCluster) = {
 
       var subIds = new ArrayBuffer[(Int, Int)]
       subIds += y.workerId -> y.id
-      val superCluster = new GlobalCluster(subIds, id, y.size, y.y_ , y.phi, m, sigma2)
+      val superCluster = new GlobalCluster(subIds, id, y.size, y.y_ , y.phi, m, Sigma0)
       individuals += superCluster
       
       id += 1
@@ -364,5 +449,43 @@ def addAuxiliaryParameters(H : Int, y : GlobalCluster) = {
       val Gamma = new GammaDistribution(a + k - 1, b - Math.log(eta))
       Gamma.sample
     }    
+  }
+  
+  def scalarProduct(f : Array[Double], g : Array[Double], sigma : Double, beta : Double)={
+    
+    val tDiff = tStar(1) - tStar(0)
+    
+    //val spline = new SplineInterpolator
+    
+    val spline = new LoessInterpolator
+    
+    val fg = f.zip(g).map{ case (a, b) => a * b }
+    
+    val fgSpline = spline.interpolate(tStar, fg)
+    
+    val fSpline = spline.interpolate(tStar, f)
+    
+    val gSpline = spline.interpolate(tStar, g)
+    
+    val fDeriv = fSpline.derivative
+    
+    val gDeriv = gSpline.derivative
+    
+    val fgDeriv = fgSpline.derivative
+    
+    val integr = new TrapezoidIntegrator
+    
+    val A = tDiff * integr.integrate(org.apache.commons.math3.analysis.integration.BaseAbstractUnivariateIntegrator.DEFAULT_MAX_ITERATIONS_COUNT, fgSpline, tStar(0), tStar(tStar.length-1))
+
+    val B = tDiff * integr.integrate(org.apache.commons.math3.analysis.integration.BaseAbstractUnivariateIntegrator.DEFAULT_MAX_ITERATIONS_COUNT, fgDeriv, tStar(0), tStar(tStar.length-1))
+    
+    (1 / Math.pow(sigma, 2)) * (B + Math.pow(beta, 2) * A) + beta / Math.pow(sigma, 2) * (f(0) * g(0) + f(tStar.length-1) * g(tStar.length-1))
+    
+  }
+  
+  def logLikelihood(data : Array[Double], mean : Array[Double], sigma : Double, beta : Double) : Double ={
+    
+    scalarProduct(data, mean, sigma, beta) - scalarProduct(mean, mean, sigma, beta) / 2
+    
   }
 }
