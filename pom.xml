@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.mycompany</groupId>
-  <artifactId>DCDPM</artifactId>
+  <artifactId>HD4C</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>DCDPM</name>
+  <name>HD4C</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -43,6 +43,13 @@
       <artifactId>jama</artifactId>
       <version>1.0.3</version>
     </dependency>
+    
+    <!-- https://mvnrepository.com/artifact/ca.umontreal.iro.simul/ssj -->
+    <dependency>
+        <groupId>ca.umontreal.iro.simul</groupId>
+        <artifactId>ssj</artifactId>
+        <version>3.1.0</version>
+    </dependency>
 
   </dependencies>
 
@@ -55,7 +62,7 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
-                    <mainClass>com.mycompany.dcdpm.App</mainClass>
+                    <mainClass>fr.inria.zenith.hd4c.App</mainClass>
                 </configuration>
             </plugin>
 			
@@ -92,7 +99,7 @@
                         <manifest>
                             <classpathPrefix>lib/</classpathPrefix>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.mycompany.dcdpm.App</mainClass>
+                            <mainClass>fr.inria.zenith.hd4c.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -119,33 +126,32 @@
                 </executions>
             </plugin>
             
-      <!-- Plugin to create a single jar that includes all dependencies -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>com.mycompany.dcdpm.App</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+            <!-- Plugin to create a single jar that includes all dependencies -->
+            <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <version>2.4</version>
+              <configuration>
+                <descriptorRefs>
+                  <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+                <archive>
+                  <manifest>
+                    <addClasspath>true</addClasspath>
+                    <mainClass>fr.inria.zenith.hd4c.App</mainClass>
+                  </manifest>
+                </archive>
+              </configuration>
+              <executions>
+                <execution>
+                  <id>make-assembly</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>single</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
             
       </plugins>
-
   </build>
 </project>
