@@ -1,4 +1,4 @@
-package com.mycompany.dcdpm
+package fr.inria.zenith.dcdpm
 
 import scala.collection.mutable.ArrayBuffer
 import org.apache.commons.math3.distribution.MultivariateNormalDistribution
