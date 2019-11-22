@@ -2,7 +2,25 @@
 
 This is a Distributed Clustering with Spark based on Dirichlet Process Mixture adapted for high dimensional data, this approach is described in the following paper:
 
-Khadidja Meguelati, Bénédicte Fontez, Nadine Hilgert, Florent Masseglia. [High Dimensional Data Clustering by means of Distributed Dirichlet Process Mixture Models](). IEEE Big Data : IEEE International Conference on Big Data, Dec 2019, Los Angeles, CA, USA.
+Khadidja Meguelati, Bénédicte Fontez, Nadine Hilgert, Florent Masseglia. [High Dimensional Data Clustering by means of Distributed Dirichlet Process Mixture Models](https://hal-lirmm.ccsd.cnrs.fr/lirmm-02364411). IEEE Big Data : IEEE International Conference on Big Data, Dec 2019, Los Angeles, CA, USA.
+
+Please kindly cite our paper if the code helps you. Thank you.
+
+```
+@inproceedings{meguelati:lirmm-02364411,
+  TITLE = {{High Dimensional Data Clustering by means of Distributed Dirichlet Process Mixture Models}},
+  AUTHOR = {Meguelati, Khadidja and Fontez, B{\'e}n{\'e}dicte and Hilgert, Nadine and Masseglia, Florent},
+  URL = {https://hal-lirmm.ccsd.cnrs.fr/lirmm-02364411},
+  BOOKTITLE = {{IEEE International Conference on Big Data (IEEE BigData)}},
+  ADDRESS = {Los-Angeles, United States},
+  YEAR = {2019},
+  MONTH = Dec,
+  KEYWORDS = {Gaussian random process ; Dirichlet Process Mixture Model ; Clustering ; Parallelism ; Reproducing Kernel Hilbert Space},
+  PDF = {https://hal-lirmm.ccsd.cnrs.fr/lirmm-02364411/file/IEEE_BigData_2019__HAL_.pdf},
+  HAL_ID = {lirmm-02364411},
+  HAL_VERSION = {v1},
+}
+```
 
 ## Requirements
 HD4C works with [Apache Spark](http://spark.apache.org). In order to run it you must download and install [Spark Release 2.0.0](https://spark.apache.org/releases/spark-release-2-0-0.html).
